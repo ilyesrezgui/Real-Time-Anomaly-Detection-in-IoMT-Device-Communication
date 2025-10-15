@@ -1,5 +1,6 @@
 <!-- Architecture Explanation Section -->
 
+
 ## 🧠 Architecture Explanation
 
 The system architecture is divided into **two main environments**:  
@@ -54,3 +55,4 @@ This layer ensures detected anomalies are stored, visualized, and acted upon.
 - **Real-time layer** streams IoMT traffic and applies those models.  
 - **Monitoring layer** stores, visualizes, and alerts on anomalies.  
 - All components run in **containerized services within a secure Kubernetes cluster**, making the system scalable and production-ready for healthcare environments.
+
