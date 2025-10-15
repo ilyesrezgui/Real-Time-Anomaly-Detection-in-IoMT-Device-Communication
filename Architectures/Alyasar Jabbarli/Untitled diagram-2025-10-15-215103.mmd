@@ -1,0 +1,80 @@
+flowchart TD
+ subgraph subGraph0["Data Ingestion &amp; Validation Layer"]
+        B("Kafka Producer")
+        A["CICIoMT2023 Dataset"]
+        C("Kafka Broker")
+        V["Schema Validation / Great Expectations"]
+  end
+ subgraph subGraph1["Real-Time Processing Pipeline (Flink)"]
+        D{"Spark Streaming"}
+        E["Feature Extractor - Pandas"]
+        F["Anomaly Detection - LSTM Autoencoder - TensorFlow / Keras"]
+        G{"Anomaly Gate"}
+  end
+ subgraph subGraph2["Explainability & Monitoring"]
+        X["Explainability Module - SHAP / Feature Contribution"]
+        I1["Grafana / Kibana Dashboards"]
+  end
+ subgraph subGraph3["Storage & Action Layer"]
+        H("InfluxDB - Store Anomaly Metrics")
+        J("Alerting Service - Email, Slack")
+  end
+ subgraph subGraph4["Containerized &amp; Secured Services"]
+    direction TB
+        K("Docker Container")
+        Z["Network Security Layer - TLS / Encryption, RBAC"]
+  end
+ subgraph subGraph5["Kubernetes Cluster (Production Environment)"]
+    direction LR
+        subGraph0
+        subGraph1
+        subGraph2
+        subGraph3
+        subGraph4
+  end
+ subgraph subGraph6["Offline Training Environment (Separate Process)"]
+    direction TB
+        M["Data Preprocessing & Feature Engineering"]
+        L["Historical Normal Traffic - from CICIoMT2023"]
+        N["LSTM Autoencoder Training - TensorFlow / Keras"]
+        O["Model Registry - MLflow / DVC"]
+        Q["Classifier Training - Random Forest, CNN"]
+        P["Full Labeled Dataset"]
+        R["Threshold Tuning - Optimize Anomaly Threshold"]
+  end
+    A --> B
+    B --> C
+    C --> V
+    V --> D
+    D -- "1. Ingest Raw IoMT Traffic" --> E
+    E -- "2. Extract & Normalize Features" --> F
+    F -- "3. Compute Reconstruction Error" --> G
+    F --> X
+    X --> I1
+    G -- Score > Threshold --> H
+    H --> I1
+    G -- Trigger Alert --> J
+    K --> D & B & H & I1 & J
+    Z --> K
+    L --> M
+    M --> N
+    N -- "Trained Model (.h5)" --> O
+    O -- Versioned Model for Inference --> F
+    P --> Q
+    Q -- Performance Metrics --> R
+    R -- Optimized Threshold --> G
+
+    style B fill:#f9f,stroke:#333,stroke-width:2px
+    style C fill:#f9f,stroke:#333,stroke-width:2px
+    style D fill:#f90,stroke:#333,stroke-width:2px
+    style X fill:#ffb6c1,stroke:#333,stroke-width:2px
+    style I1 fill:#9cf,stroke:#333,stroke-width:2px
+    style H fill:#9cf,stroke:#333,stroke-width:2px
+    style J fill:#9cf,stroke:#333,stroke-width:2px
+    style Z fill:#bbb,stroke:#333,stroke-width:2px
+    style N fill:#9f9,stroke:#333,stroke-width:2px
+    style O fill:#cfc,stroke:#333,stroke-width:2px
+    style Q fill:#9f9,stroke:#333,stroke-width:2px
+    style R fill:#9f9,stroke:#333,stroke-width:2px
+
+
