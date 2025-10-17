@@ -52,29 +52,5 @@ The **IoMT-AD** project aims to detect abnormal behavior in Internet of Medical 
 5. **Visualization & Monitoring:**  
    - Use **Grafana/Kibana** dashboards to track device health, anomaly frequency, and attack patterns.  
 
----
 
-## Technologies Used
 
-- **Data Simulation & Ingestion:** Kafka  
-- **Preprocessing & Feature Engineering:** Python, Pandas, Scapy  
-- **Anomaly Detection:** LSTM Autoencoder, TensorFlow/Keras  
-- **Stream Processing:** Apache Spark Streaming / Flink  
-- **Visualization & Alerts:** Grafana, Kibana, Slack/Email/SMS integration  
-- **Storage:** InfluxDB  
-- **Deployment & Containerization:** Docker, Kubernetes  
-
----
-
-## Getting Started
-
-### Prerequisites
-- Docker & Kubernetes  
-- Python 3.9+  
-- Kafka, Spark/Flink, InfluxDB, Grafana/Kibana  
-
-### Setup
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/iomt-ad.git
-   cd iomt-ad
