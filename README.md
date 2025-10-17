@@ -1,25 +1,80 @@
-Topic 6: Real-Time Anomaly Detection in IoMT Device Communication (IoMT-AD)
-Description:
-This project will build a system to analyze and detect abnormal behavior on the Internet of Medical Things (IoMT) devices such as patient monitors, infusion pumps, and wearables. The focus is on identifying unusual communication patterns that may indicate device malfunctions or cyberattacks. By analyzing real-time traffic streams, the system will flag anomalies, trigger alerts, and provide visualization dashboards to help healthcare operators respond quickly.
-Team Size: 5
-Mentored by: Loubna Seddiki (seddikiloubna@inf.elte.hu)
-Dataset:
-CICIoMT2023 Dataset (IoMT network traffic with both normal and attack scenarios)
-Open-Source Technologies to be Used:
-Data Simulation & Ingestion: Use Kafka to simulate and ingest IoMT traffic from CICIoMT2023 in real time.
-Preprocessing & Feature Engineering: Extract communication features such as packet size, protocol type, connection duration, and flow statistics using Python (Pandas, Scapy).
-Anomaly Detection Model: Train LSTM autoencoders for unsupervised anomaly detection and use TensorFlow/Keras for model training and inference.
-Stream Processing: Use Apache Spark Streaming or Flink to process traffic flows, apply feature extraction, and run real-time inference.
-Visualization & Alerts: Implement dashboards with Grafana or Kibana to monitor device traffic, anomaly scores, and attack patterns. Integrate alerting mechanisms (email, Slack, SMS).
-Storage: Use InfluxDB to store IoMT traffic metrics, anomalies, and alerts for later analysis.
-Deployment & Containerization: Package system components with Docker and orchestrate them with Kubernetes for scalability in healthcare network environments.
-Batch Processing Tasks:
-Train an LSTM autoencoder model on historical normal IoMT traffic to learn baseline device communication behavior.
-Train classification models (e.g., Random Forest, CNN) to distinguish between normal and malicious traffic for evaluation.
-Tune thresholds for anomaly detection based on reconstruction error distributions.
-Real-Time Processing Pipelines:
-Pipeline 1: Simulating IoMT Traffic. Replay CICIoMT2023 traffic streams using Kafka to emulate real-world IoMT communication.
-Pipeline 2: Data Preprocessing & Feature Extraction. Extract relevant network features (packet size, duration, flow count, protocols) and normalize them in real time.
-Pipeline 3: Anomaly Detection Model. Apply the LSTM autoencoder to incoming traffic and compute reconstruction error to flag unusual device communication.
-Pipeline 4: Alerting & Forensic Storage. Generate alerts for abnormal behavior, store flagged sessions in InfluxDB, and mark them for forensic investigation.
-Pipeline 5: Visualization & Monitoring. Use Grafana/Kibana dashboards to show device health, anomaly frequency over time, and heatmaps of attack patterns per device type.
+# Real-Time Anomaly Detection in IoMT Device Communication (IoMT-AD)
+
+**Team Size:** 5  
+**Mentor:** Loubna Seddiki (seddikiloubna@inf.elte.hu)  
+
+---
+
+## Project Overview
+
+The **IoMT-AD** project aims to detect abnormal behavior in Internet of Medical Things (IoMT) devices, such as patient monitors, infusion pumps, and wearables, in **real-time**. By analyzing network traffic, the system can flag unusual communication patterns that may indicate device malfunctions or cyberattacks, helping healthcare operators respond promptly.  
+
+---
+
+## Key Features
+
+- Real-time detection of anomalies in IoMT network traffic.
+- Visualization dashboards for monitoring device health and attack patterns.
+- Alerting mechanisms (email, Slack, SMS) for quick response.
+- Scalable deployment using containerization and orchestration (Docker & Kubernetes).
+
+---
+
+## Dataset
+
+**CICIoMT2023 Dataset**  
+- Contains IoMT network traffic for both normal operations and attack scenarios.  
+- Used for both model training and real-time simulation.
+
+---
+
+## Architecture & Pipelines
+
+### Batch Processing
+1. **Model Training:**  
+   - Train **LSTM Autoencoders** on normal IoMT traffic to learn baseline behavior.  
+   - Train classification models (Random Forest, CNN) to evaluate normal vs malicious traffic.  
+2. **Threshold Tuning:**  
+   - Determine anomaly detection thresholds based on reconstruction error distributions.
+
+### Real-Time Processing Pipelines
+1. **Simulating IoMT Traffic:**  
+   - Replay CICIoMT2023 traffic streams using **Kafka** to emulate real-world IoMT communication.
+2. **Data Preprocessing & Feature Extraction:**  
+   - Extract features like packet size, protocol type, connection duration, and flow statistics using **Python (Pandas, Scapy)**.  
+   - Normalize and prepare features in real-time.  
+3. **Anomaly Detection:**  
+   - Apply **LSTM Autoencoder** for reconstruction error-based anomaly detection.  
+   - Flag unusual device communication.  
+4. **Alerting & Forensic Storage:**  
+   - Generate alerts for abnormal behavior.  
+   - Store flagged sessions in **InfluxDB** for forensic investigation.  
+5. **Visualization & Monitoring:**  
+   - Use **Grafana/Kibana** dashboards to track device health, anomaly frequency, and attack patterns.  
+
+---
+
+## Technologies Used
+
+- **Data Simulation & Ingestion:** Kafka  
+- **Preprocessing & Feature Engineering:** Python, Pandas, Scapy  
+- **Anomaly Detection:** LSTM Autoencoder, TensorFlow/Keras  
+- **Stream Processing:** Apache Spark Streaming / Flink  
+- **Visualization & Alerts:** Grafana, Kibana, Slack/Email/SMS integration  
+- **Storage:** InfluxDB  
+- **Deployment & Containerization:** Docker, Kubernetes  
+
+---
+
+## Getting Started
+
+### Prerequisites
+- Docker & Kubernetes  
+- Python 3.9+  
+- Kafka, Spark/Flink, InfluxDB, Grafana/Kibana  
+
+### Setup
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/iomt-ad.git
+   cd iomt-ad
