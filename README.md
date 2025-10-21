@@ -112,14 +112,4 @@ The system **flags anomalies**, **triggers alerts**, and provides **visual dashb
 
 ---
 
-## 🚀 Deployment
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/IoMT-AD.git
-cd IoMT-AD
 
-# Build Docker containers
-docker-compose build
-
-# Run the full system
-docker-compose up
