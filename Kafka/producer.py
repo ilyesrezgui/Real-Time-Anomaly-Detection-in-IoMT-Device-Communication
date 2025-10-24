@@ -7,8 +7,8 @@ from kafka import KafkaProducer
 # --- Configuration ---
 KAFKA_BROKER = 'localhost:9092'  # Use 'kafka:9092' if running from another container in the Docker network
 KAFKA_TOPIC = 'iomt_traffic_stream'
-CSV_FILE_PATH = 'data.csv'# **Change this to your actual file path**
-SIMULATION_DELAY_SECONDS = 0.01  # Adjust this value to control the speed of traffic simulation
+CSV_FILE_PATH = 'data.csv'
+SIMULATION_DELAY_SECONDS = 0.01  # Controls the speed of traffic simulation
 
 def json_serializer(data):
     """Simple JSON serializer for Kafka messages."""
