@@ -11,7 +11,8 @@ Start Zookeeper and Kafka using the `docker-compose.yml` file:
 ```bash
 docker-compose up -d
 
-## Step 2: Run the Python Producer
+
+### Step 2: Run the Python Producer
 
 Run the Python script that acts as the Kafka producer.  
 It will send the IoMT dataset in **batches of 1000 records** to the Kafka topic.
