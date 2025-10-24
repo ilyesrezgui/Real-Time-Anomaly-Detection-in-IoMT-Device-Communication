@@ -27,7 +27,8 @@ docker-compose up -d
 Execute the Python script (producer.py), which acts as the Kafka Producer. It reads the IoMT dataset and sends the records to the iomt_traffic_stream topic in batches of 1000 records to simulate real-time traffic flow.
 
 ````
-python producer.py
+cd..
+python kafka\producer.py
 ````
 ### Step 3: Verify Data is Being Sent (Console Consumer)
 To monitor the data flow and verify that the producer is sending messages correctly, use the Kafka console consumer running inside the Kafka Docker container. This command subscribes to the iomt_traffic_stream topic and displays messages in real-time.
