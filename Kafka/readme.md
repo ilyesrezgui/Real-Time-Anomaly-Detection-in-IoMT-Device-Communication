@@ -22,3 +22,9 @@ Start the **Zookeeper** and **Kafka Broker** services using the `docker-compose.
 
 ```bash
 docker-compose up -d
+
+### Step 2 : Run the IoMT Traffic Producer
+Execute the Python script (producer.py), which acts as the Kafka Producer. It reads the IoMT dataset and sends the records to the iomt_traffic_stream topic in batches of 1000 records to simulate real-time traffic flow.
+
+```bash
+python producer.py
