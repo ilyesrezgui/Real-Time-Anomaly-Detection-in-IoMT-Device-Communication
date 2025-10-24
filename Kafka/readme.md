@@ -1,4 +1,4 @@
-# Real-Time IoMT Traffic Simulation 🩺
+# Real-Time IoMT Traffic Simulation 
 
 This project simulates real-time Internet of Medical Things (**IoMT**) device communication using a **Kafka Producer-Consumer architecture** within a Dockerized environment. It replays IoMT dataset traffic in real time for monitoring and analysis.
 
