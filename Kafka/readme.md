@@ -1,21 +1,24 @@
-## Real-Time IoMT Traffic Simulation
+# Real-Time IoMT Traffic Simulation 🩺
 
-This part simulates real-time IoMT device communication using Kafka (Producer–Consumer architecture). It replays IoMT dataset traffic in real time and allows you to monitor it.
+This project simulates real-time Internet of Medical Things (**IoMT**) device communication using a **Kafka Producer-Consumer architecture** within a Dockerized environment. It replays IoMT dataset traffic in real time for monitoring and analysis.
 
 ---
 
-### Step 1: Run Docker Compose
+## Prerequisites
 
-Start Zookeeper and Kafka using the `docker-compose.yml` file:
+* **Docker** and **Docker Compose** installed on your system.
+* **Python 3.x** installed.
+* Required Python libraries (e.g., `kafka-python`) installed (typically via `pip install -r requirements.txt`).
+
+---
+
+## Setup and Execution
+
+Follow these steps to set up and run the real-time simulation.
+
+### Step 1: Start Zookeeper and Kafka (Docker Compose)
+
+Start the **Zookeeper** and **Kafka Broker** services using the `docker-compose.yml` file. This command runs them in detached mode (`-d`).
 
 ```bash
 docker-compose up -d
-
-
-### Step 2: Run the Python Producer
-
-Run the Python script that acts as the Kafka producer.  
-It will send the IoMT dataset in **batches of 1000 records** to the Kafka topic.
-
-```bash
-python producer.py
