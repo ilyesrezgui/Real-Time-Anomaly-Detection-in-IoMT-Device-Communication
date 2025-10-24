@@ -18,13 +18,8 @@ Follow these steps to set up and run the real-time simulation.
 
 ### Step 1: Start Zookeeper and Kafka (Docker Compose)
 
-Start the **Zookeeper** and **Kafka Broker** services using the `docker-compose.yml` file. This command runs them in detached mode (`-d`).
+Start the **Zookeeper** and **Kafka Broker** services using the `docker-compose.yml` file.
 
 ```bash
-docker-compose up -d
+docker-compose up -d 
 
-### Step 2 : Run the IoMT Traffic Producer
-Execute the Python script (producer.py), which acts as the Kafka Producer. It reads the IoMT dataset and sends the records to the iomt_traffic_stream topic in batches of 1000 records to simulate real-time traffic flow.
-
-```bash
-python producer.py
