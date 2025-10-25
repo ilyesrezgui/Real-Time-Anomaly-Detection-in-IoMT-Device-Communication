@@ -4,13 +4,13 @@ import time
 from kafka import KafkaProducer
 
 # --- Configuration ---
-KAFKA_BROKER = 'localhost:9092'  # Use 'kafka:9092' if running from another container in the Docker network
-KAFKA_TOPIC = 'iomt_traffic_stream'
+KAFKA_BROKER = 'localhost:9092'  # the Kafka server (localhost:9092). This is where the producer will send the messages.
+KAFKA_TOPIC = 'iomt_traffic_stream' #The name of the Kafka topic (iomt_traffic_stream) to which the simulated IoMT data will be published.
 CSV_FILE_PATH = 'data.csv'
-SIMULATION_DELAY_SECONDS = 0.01  # Controls the speed of traffic simulation
+SIMULATION_DELAY_SECONDS = 0.01  #A small delay (0.01 seconds) introduced after sending each record to Kafka.
 
 def json_serializer(data):
-    """Simple JSON serializer for Kafka messages."""
+    """Simple JSON serializer for Kafka messages. from Python dic to JSON formatted string to bytes"""
     return json.dumps(data).encode('utf-8')
 
 def simulate_iomt_traffic():
