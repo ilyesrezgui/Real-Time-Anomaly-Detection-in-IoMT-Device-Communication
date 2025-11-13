@@ -12,10 +12,11 @@ CONSUMER_GROUP = 'iomt_consumer_group'  # <-- add this line
 KAFKA_BROKER = 'localhost:9092'
 KAFKA_TOPIC = 'iomt_traffic_stream'
 # --- InfluxDB Config ---
+
 INFLUX_URL = "http://localhost:8086"
-INFLUX_TOKEN = "Kb3IeaTwH0gjSAdDKcEPVUY0K0U2oaS4CZNVhH7lrrxHKzCjFwEUR9ZWda-wzMI4HuFu82RW06IMdfpu5XXdJw=="
+INFLUX_TOKEN = "fpQW8sZYT3xv_kSM0N1lhTWqFhWyawfSu5_qGmYpylJUFsxujvMAWWYM3BMMw38gdKUWkVXcH1Cxsm_M6AIrcA=="
 INFLUX_ORG = "OST"
-INFLUX_BUCKET = "iomt_data"                 # Replace with your bucket
+INFLUX_BUCKET = "iomt_data"  # <-- add this line
 
 # ----------------------
 # Initialize Kafka Consumer
