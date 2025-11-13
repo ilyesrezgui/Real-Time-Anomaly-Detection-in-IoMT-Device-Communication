@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+version: '3.7'
+>>>>>>> ea555588623e18ba1664888df04ee74bb5065a3b
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0
@@ -22,6 +26,7 @@ services:
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+<<<<<<< HEAD
 
   influxdb:
     image: influxdb:2.7
@@ -53,3 +58,5 @@ services:
 volumes:
   influxdb-data:
   grafana-data:
+=======
+>>>>>>> ea555588623e18ba1664888df04ee74bb5065a3b

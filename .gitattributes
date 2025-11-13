@@ -1,3 +1,6 @@
 *.csv filter=lfs diff=lfs merge=lfs -text
 Kafka/data.csv filter=lfs diff=lfs merge=lfs -text
+<<<<<<< HEAD
 *.jar filter=lfs diff=lfs merge=lfs -text
+=======
+>>>>>>> ea555588623e18ba1664888df04ee74bb5065a3b

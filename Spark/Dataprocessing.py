@@ -2,10 +2,13 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, from_json
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType
 
+<<<<<<< HEAD
 # --- Configuration ---
 KAFKA_BROKER = 'localhost:9092'
 KAFKA_TOPIC = "iomt_traffic_stream"
 
+=======
+>>>>>>> ea555588623e18ba1664888df04ee74bb5065a3b
 # -----------------------
 # 1️⃣ Create Spark Session
 # -----------------------
@@ -67,6 +70,7 @@ schema = StructType([
 # -----------------------
 kafka_df = spark.readStream \
     .format("kafka") \
+<<<<<<< HEAD
     .option("kafka.bootstrap.servers", KAFKA_BROKER) \
     .option("subscribe", KAFKA_TOPIC) \
     .option("startingOffsets", "latest") \
@@ -74,6 +78,17 @@ kafka_df = spark.readStream \
 
 # Convert bytes to string and parse JSON
 raw_df = kafka_df.selectExpr("CAST(value AS STRING)")
+=======
+    .option("kafka.bootstrap.servers", "localhost:9092") \
+    .option("subscribe", "iomt_traffic_stream") \
+    .option("startingOffsets", "latest") \
+    .load()
+
+# Convert bytes to string
+raw_df = kafka_df.selectExpr("CAST(value AS STRING)")
+
+# Parse JSON to structured columns
+>>>>>>> ea555588623e18ba1664888df04ee74bb5065a3b
 json_df = raw_df.select(from_json(col("value"), schema).alias("data")).select("data.*")
 
 # -----------------------
@@ -84,6 +99,7 @@ preprocessed_df = json_df.withColumn("Header_Length_norm", col("Header_Length") 
                          .withColumn("Time_To_Live_norm", col("Time_To_Live") / 255)
 
 # -----------------------
+<<<<<<< HEAD
 # 5️⃣ Console Output Function (Replaces ML Placeholder)
 # -----------------------
 def print_batch(df, epoch_id):
@@ -107,3 +123,23 @@ query = preprocessed_df.writeStream \
     .start()
 
 query.awaitTermination()
+=======
+# 5️⃣ ML Prediction Placeholder
+# -----------------------
+def predict_batch(df, epoch_id):
+    pandas_df = df.toPandas()
+    # TODO: Replace with your ML model
+    # Example: predictions = model.predict(pandas_df[feature_columns])
+    print(f"Batch {epoch_id} prediction preview:")
+    print(pandas_df.head())
+
+# -----------------------
+# 6️⃣ Start Streaming Query
+# -----------------------
+query = preprocessed_df.writeStream \
+    .foreachBatch(predict_batch) \
+    .outputMode("append") \
+    .start()
+
+query.awaitTermination()
+>>>>>>> ea555588623e18ba1664888df04ee74bb5065a3b
