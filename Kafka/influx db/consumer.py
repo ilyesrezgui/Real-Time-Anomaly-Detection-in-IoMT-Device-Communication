@@ -8,7 +8,9 @@ import time
 # Kafka Configuration
 # ----------------------
 
-
+CONSUMER_GROUP = 'iomt_consumer_group'  # <-- add this line
+KAFKA_BROKER = 'localhost:9092'
+KAFKA_TOPIC = 'iomt_traffic_stream'
 # --- InfluxDB Config ---
 INFLUX_URL = "http://localhost:8086"
 INFLUX_TOKEN = "Kb3IeaTwH0gjSAdDKcEPVUY0K0U2oaS4CZNVhH7lrrxHKzCjFwEUR9ZWda-wzMI4HuFu82RW06IMdfpu5XXdJw=="
