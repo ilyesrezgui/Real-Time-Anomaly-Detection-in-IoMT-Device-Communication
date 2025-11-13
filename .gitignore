@@ -1,3 +1,4 @@
 # Ignore large CSV
 data.csv
 spark-4.0.1-bin-hadoop3/yarn/spark-4.0.1-yarn-shuffle.jar 
+spark-4.0.1-bin-hadoop3/yarn/spark-4.0.1-yarn-shuffle.jar 
