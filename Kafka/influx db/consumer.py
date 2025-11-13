@@ -1,0 +1,59 @@
+from kafka import KafkaConsumer
+from influxdb_client import InfluxDBClient, Point, WritePrecision
+from influxdb_client.client.write_api import SYNCHRONOUS
+import json
+import time
+
+# ----------------------
+# Kafka Configuration
+# ----------------------
+
+
+# --- InfluxDB Config ---
+INFLUX_URL = "http://localhost:8086"
+INFLUX_TOKEN = "Kb3IeaTwH0gjSAdDKcEPVUY0K0U2oaS4CZNVhH7lrrxHKzCjFwEUR9ZWda-wzMI4HuFu82RW06IMdfpu5XXdJw=="
+INFLUX_ORG = "OST"
+INFLUX_BUCKET = "iomt_data"                 # Replace with your bucket
+
+# ----------------------
+# Initialize Kafka Consumer
+# ----------------------
+consumer = KafkaConsumer(
+    KAFKA_TOPIC,
+    bootstrap_servers=[KAFKA_BROKER],
+    value_deserializer=lambda x: json.loads(x.decode('utf-8')),
+    auto_offset_reset='earliest',
+    enable_auto_commit=True,
+    group_id=CONSUMER_GROUP
+)
+
+# ----------------------
+# Initialize InfluxDB Client
+# ----------------------
+client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
+write_api = client.write_api(write_options=SYNCHRONOUS)
+
+print(f"Consuming from Kafka topic '{KAFKA_TOPIC}' and writing to InfluxDB bucket '{INFLUX_BUCKET}'...")
+
+# ----------------------
+# Consume messages and write to InfluxDB
+# ----------------------
+for message in consumer:
+    data = message.value  # Kafka message as Python dict
+
+    # Create a Point for InfluxDB
+    point = Point("iomt_measurement")  # Measurement name
+    for key, value in data.items():
+        if isinstance(value, (int, float)):
+            point.field(key, value)        # Numeric fields
+        else:
+            point.tag(key, str(value))     # Non-numeric fields as tags
+
+    # Timestamp in nanoseconds
+    point.time(time.time_ns(), write_precision=WritePrecision.NS)
+
+    # Write to InfluxDB
+    write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=point)
+
+    # Optional: print to console
+    print(f"Written to InfluxDB: {data}")

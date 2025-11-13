@@ -2,6 +2,10 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, from_json
 from pyspark.sql.types import StructType, StructField, StringType, DoubleType
 
+# --- Configuration ---
+KAFKA_BROKER = 'localhost:9092'
+KAFKA_TOPIC = "iomt_traffic_stream"
+
 # -----------------------
 # 1️⃣ Create Spark Session
 # -----------------------
@@ -63,15 +67,13 @@ schema = StructType([
 # -----------------------
 kafka_df = spark.readStream \
     .format("kafka") \
-    .option("kafka.bootstrap.servers", "localhost:9092") \
-    .option("subscribe", "iomt_traffic_stream") \
+    .option("kafka.bootstrap.servers", KAFKA_BROKER) \
+    .option("subscribe", KAFKA_TOPIC) \
     .option("startingOffsets", "latest") \
     .load()
 
-# Convert bytes to string
+# Convert bytes to string and parse JSON
 raw_df = kafka_df.selectExpr("CAST(value AS STRING)")
-
-# Parse JSON to structured columns
 json_df = raw_df.select(from_json(col("value"), schema).alias("data")).select("data.*")
 
 # -----------------------
@@ -82,20 +84,25 @@ preprocessed_df = json_df.withColumn("Header_Length_norm", col("Header_Length") 
                          .withColumn("Time_To_Live_norm", col("Time_To_Live") / 255)
 
 # -----------------------
-# 5️⃣ ML Prediction Placeholder
+# 5️⃣ Console Output Function (Replaces ML Placeholder)
 # -----------------------
-def predict_batch(df, epoch_id):
-    pandas_df = df.toPandas()
-    # TODO: Replace with your ML model
-    # Example: predictions = model.predict(pandas_df[feature_columns])
-    print(f"Batch {epoch_id} prediction preview:")
-    print(pandas_df.head())
+def print_batch(df, epoch_id):
+    """Prints the first 5 rows of the processed DataFrame for inspection."""
+    if df.count() > 0:
+        print(f"\n✨ Batch {epoch_id} Processed Data Preview (5 rows):")
+        # Select key columns for easier viewing, including the new normalized ones
+        df.select(
+            "Header_Length", "Header_Length_norm", 
+            "Rate", "Rate_norm", 
+            "Time_To_Live", "Time_To_Live_norm", 
+            "Protocol Type", "Label"
+        ).show(5, truncate=False)
 
 # -----------------------
-# 6️⃣ Start Streaming Query
+# 6️⃣ Start Streaming Query to Console
 # -----------------------
 query = preprocessed_df.writeStream \
-    .foreachBatch(predict_batch) \
+    .foreachBatch(print_batch) \
     .outputMode("append") \
     .start()
 
