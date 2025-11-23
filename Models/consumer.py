@@ -32,4 +32,13 @@ with open(r"C:\Users\MSI\Videos\Downloads\Real-Time-Anomaly-Detection-in-IoMT-De
 
 timesteps = len(numeric_features)
 n_features = 1
+# -------------------------
+# Kafka Consumer
+# -------------------------
+consumer = KafkaConsumer(
+    'iomt_traffic_stream',
+    bootstrap_servers='localhost:9092',
+    value_deserializer=lambda v: json.loads(v.decode('utf-8')),
+    auto_offset_reset='earliest'
+)
 
