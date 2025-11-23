@@ -14,7 +14,9 @@ from os import getenv
 import os
 import datetime
 from kafka import KafkaConsumer
+import seaborn as sns
 import json
+import matplotlib.pyplot as plt
 st.set_page_config(page_title="OST data analysis", page_icon="logo.jpg", layout="wide")
 def hide_anchor_link():
     st.markdown(
@@ -69,28 +71,30 @@ a = f'<div style="background-color:#ee605f;left: 0;top: 0;width: 100%;margin-lef
 st.markdown(a, unsafe_allow_html=True)
 
 
+try:
+    consumer = KafkaConsumer(
+        KAFKA_TOPIC,
+        bootstrap_servers=[KAFKA_BROKER],
+        value_deserializer=lambda m: json.loads(m.decode('utf-8')),
+        auto_offset_reset='earliest',
+        enable_auto_commit=True,
+        consumer_timeout_ms=100
+    )
+except Exception as e:
+    consumer = []
 
-KAFKA_BROKER = 'kafka:9092'
-KAFKA_TOPIC = 'iomt_traffic_stream'
-
-consumer = KafkaConsumer(
-    KAFKA_TOPIC,
-    bootstrap_servers=[KAFKA_BROKER],
-    value_deserializer=lambda m: json.loads(m.decode('utf-8')),
-    auto_offset_reset='earliest',
-    enable_auto_commit=True,
-    consumer_timeout_ms=100
-)
 df = pd.DataFrame()
-stframe = st.empty()  
+stframe = st.empty()
+
 for message in consumer:
-    data = message.value
-    df = pd.concat([df, pd.DataFrame([data])], ignore_index=True)
-    stframe.dataframe(df)  
-    if len(df) > 100:
-        df = df.tail(100)
-
-
+    try:
+        data = message.value
+        df = pd.concat([df, pd.DataFrame([data])], ignore_index=True)
+        stframe.dataframe(df)
+        if len(df) > 100:
+            df = df.tail(100)
+    except Exception as e:
+        continue
 st.markdown(f'<div class="line" style=" display: inline-block;border-top: 1px solid black;width:  100%;margin-top: 0px; margin-bottom: 20px"></div>', unsafe_allow_html=True)
 selected = option_menu(
     menu_title=None,
@@ -101,22 +105,43 @@ selected = option_menu(
         "container": {"margin": "0","max-width": "100%"},
     }
 )
-df=pd.read_csv('data.csv')
 features = [
-     'Header_Length', 'Protocol Type', 'Time_To_Live', 'Rate',
-    'fin_flag_number', 'syn_flag_number', 'psh_flag_number', 'ack_flag_number',
-    'syn_count', 'fin_count', 'ack_count', 'rst_count', 'HTTP', 'HTTPS',
-    'TCP', 'UDP', 'ICMP', 'Tot sum', 'Min', 'Max', 'IAT', 'Variance', 'Label_Type'
-]
-df['Label_Type'] = df['Label'].apply(lambda x: 'normal' if x == 'BENIGN' else 'anomaly')
-X_train, X_test, y_train, y_test = train_test_split(
-    df, y, test_size=0.2, random_state=42, stratify=y
-)
+        'Header_Length', 'Protocol Type', 'Time_To_Live', 'Rate',
+        'fin_flag_number', 'syn_flag_number', 'psh_flag_number', 'ack_flag_number',
+        'syn_count', 'fin_count', 'ack_count', 'rst_count', 'HTTP', 'HTTPS',
+        'TCP', 'UDP', 'ICMP', 'Tot sum', 'Min', 'Max', 'IAT', 'Variance', 'Label_Type'
+    ]
 def page1():
+    st.header("📊 Data Summary")
     df=pd.read_csv('data.csv')
+    
+    df['Label_Type'] = df['Label'].apply(lambda x: 'normal' if x == 'BENIGN' else 'anomaly')
+   
+    df = df.sample(frac=0.4, random_state=42)
+    st.dataframe(df.describe())
+    col1_row1, col2_row1 = st.columns(2)
+    with col1_row1:
+        fig = px.histogram(df, x="Label", color="Label", title="Count of Labels")
+        st.header("📊 Label Distribution")
+        st.plotly_chart(fig)
+    with col2_row1:
+        fig = px.box(df, x="Label", y='Header_Length', color="Label", title=f'Header_Length by {"Label"}')
+        st.plotly_chart(fig)
+
+    col1_row2, col2_row2 = st.columns(2)
+    with col1_row2:
+        fig = px.box(df, x="Label", y='Time_To_Live', color="Label", title=f'Time_To_Live by {"Label"}')
+        st.plotly_chart(fig)
+    with col2_row2:
+        fig = px.box(df, x="Label", y='HTTP', color="Label", title=f'HTTP by {"Label"}')
+        st.plotly_chart(fig)
+    fig = plt.figure(figsize=(20, 15))
+    sns.heatmap(df.corr(numeric_only=True), cmap="YlGnBu", annot=False)
+    st.header("🔍 Correlation Heatmap")
+    st.pyplot(fig)
 def page2():
     df=pd.read_csv('data.csv')
-def page2():
+def page3():
     df=pd.read_csv('data.csv')
 
 if selected == "data analysis":
