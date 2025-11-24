@@ -17,6 +17,9 @@ from kafka import KafkaConsumer
 import seaborn as sns
 import json
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, accuracy_score, f1_score, precision_score, recall_score, classification_report, confusion_matrix
+import joblib 
 st.set_page_config(page_title="OST data analysis", page_icon="logo.jpg", layout="wide")
 def hide_anchor_link():
     st.markdown(
@@ -98,7 +101,7 @@ for message in consumer:
 st.markdown(f'<div class="line" style=" display: inline-block;border-top: 1px solid black;width:  100%;margin-top: 0px; margin-bottom: 20px"></div>', unsafe_allow_html=True)
 selected = option_menu(
     menu_title=None,
-    options=["data analysis","auto enconder model implementation", "isolation forest model implementation"],
+    options=["data analysis", "isolation forest model implementation"],
     icons=["bar-chart-fill", "diagram-3", "table"], 
     orientation="horizontal",
     styles={
@@ -111,13 +114,13 @@ features = [
         'syn_count', 'fin_count', 'ack_count', 'rst_count', 'HTTP', 'HTTPS',
         'TCP', 'UDP', 'ICMP', 'Tot sum', 'Min', 'Max', 'IAT', 'Variance', 'Label_Type'
     ]
+
+
 def page1():
-    st.header("📊 Data Summary")
     df=pd.read_csv('data.csv')
-    
     df['Label_Type'] = df['Label'].apply(lambda x: 'normal' if x == 'BENIGN' else 'anomaly')
-   
     df = df.sample(frac=0.4, random_state=42)
+    st.header("📊 Data Summary")
     st.dataframe(df.describe())
     col1_row1, col2_row1 = st.columns(2)
     with col1_row1:
@@ -141,13 +144,91 @@ def page1():
     st.pyplot(fig)
 def page2():
     df=pd.read_csv('data.csv')
-def page3():
-    df=pd.read_csv('data.csv')
+    df['Label_Type'] = df['Label'].apply(lambda x: 'normal' if x == 'BENIGN' else 'anomaly')
+    df = df.sample(frac=0.4, random_state=42)
+    df = df[features]
+    try:
+        with open("forest.pkl", "rb") as file:
+            model = joblib.load(file)
+    except FileNotFoundError:
+        st.error("Model file not found. Ensure model.pkl is inside /app.")
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
+    X = df.drop(['Label_Type'], axis=1)
+    y = df['Label_Type']
+    X = X.replace([np.inf, -np.inf], np.nan)
+    X = X.fillna(X.median())
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+    y_pred_raw = model.predict(X_scaled)
+    y_pred_iso = ['anomaly' if x==1 else 'normal' for x in y_pred_raw]
+    df_result = X.copy()
+    df_result['Label_Type'] = y
+    df_result['Predicted'] = y_pred_iso
+    cm = confusion_matrix(y, y_pred_iso, labels=['normal', 'anomaly'])
+    col1_row1, col2_row1 = st.columns(2)
+    with col1_row1:
+        fig = px.histogram(
+    df_result,
+    x="Header_Length",
+    color="Label_Type",
+    barmode="overlay",
+    opacity=0.6,
+    title="Distribution of Header_Length by Label Type"
+)
+        st.plotly_chart(fig)
+    with col2_row1:
+        fig = px.histogram(
+    df_result,
+    x="Time_To_Live",
+    color="Label_Type",
+    barmode="overlay",
+    opacity=0.6,
+    title="Distribution of Time_To_Live by Label Type")
+        st.plotly_chart(fig)
+   
+
+    col1_row2, col2_row2 = st.columns(2)
+    with col1_row2:
+        fig = px.histogram(
+    df_result,
+    x="HTTP",
+    color="Label_Type",
+    barmode="overlay",
+    opacity=0.6,
+    title="Distribution of HTTP by Label Type")
+        st.plotly_chart(fig)
+   
+    with col2_row2:
+        fig = px.histogram(
+    df_result,
+    x="TCP",
+    color="Label_Type",
+    barmode="overlay",
+    opacity=0.6,
+    title="Distribution of TCP by Label Type")
+        st.plotly_chart(fig)
+   
+    fig = plt.figure(figsize=(20, 10))
+    sns.heatmap(
+        cm,
+        annot=True,
+        fmt='d',
+        cmap='Blues',
+        xticklabels=['normal', 'anomaly'],
+        yticklabels=['normal', 'anomaly'])
+    
+
+    plt.xlabel('Predicted')
+    plt.ylabel('Actual')
+    plt.title('Confusion Matrix')
+
+    st.pyplot(fig)
+
+
 
 if selected == "data analysis":
   page1()
-if selected == "auto enconder model implementation":
-  page2()
 if selected == "isolation forest model implementation":
-  page3()
+  page2()
 
