@@ -59,20 +59,32 @@ bucket = "iomt_data"
 # Helper function: preprocess message
 # -------------------------
 def preprocess_message(data):
-    # Fill missing numeric features with 0 (safe)
+    # Extract numeric features only (missing ones default to 0)
     row = [data.get(f, 0) for f in numeric_features]
-    arr = np.array(row).reshape(1, -1)
-    # Scale features using trained scaler
+    arr = np.array(row, dtype=np.float32).reshape(1, -1)
+    
+    # Replace inf/-inf with 0
+    arr = np.where(np.isfinite(arr), arr, 0)
+    
+    # Optional: clip extreme values to avoid scaling issues
+    arr = np.clip(arr, -1e10, 1e10)
+    
+    # Scale
     arr_scaled = scaler.transform(arr)
-    # Reshape for LSTM input
+    
+    # Reshape for LSTM
     arr_scaled = arr_scaled.reshape(1, timesteps, n_features)
     return arr_scaled
+
 
 # -------------------------
 # Main loop
 # -------------------------
 for msg in consumer:
-    data = msg.value  # JSON from Kafka
+    
+    data = msg.value  
+
+# JSON from Kafka
     try:
         X = preprocess_message(data)
     except Exception as e:
