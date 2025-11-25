@@ -5,3 +5,6 @@ spark-4.0.1-bin-hadoop3/yarn/spark-4.0.1-yarn-shuffle.jar
 spark-4.0.1-bin-hadoop3/yarn/spark-4.0.1-yarn-shuffle.jar 
 =======
 >>>>>>> ea555588623e18ba1664888df04ee74bb5065a3b
+venv/
+.venv/
+env/
