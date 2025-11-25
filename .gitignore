@@ -1,10 +1,59 @@
-# Ignore large CSV
+# Large CSV files
 data.csv
-<<<<<<< HEAD
-spark-4.0.1-bin-hadoop3/yarn/spark-4.0.1-yarn-shuffle.jar 
-spark-4.0.1-bin-hadoop3/yarn/spark-4.0.1-yarn-shuffle.jar 
-=======
->>>>>>> ea555588623e18ba1664888df04ee74bb5065a3b
+
+# Spark binaries and JAR files
+spark-4.0.1-bin-hadoop3/
+*.jar
+
+# Python virtual environments
 venv/
 .venv/
 env/
+ENV/
+.python-version
+
+# Python cache
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Spark and Hadoop temporary files
+metastore_db/
+derby.log
+spark-warehouse/
+
+# Checkpoint directories
+/tmp/spark-checkpoint/
+checkpoint/
+
+# Model artifacts (optional - uncomment if you want to ignore)
+# *.h5
+# *.pkl
+# *.json
+
+# Logs
+*.log
+logs/
+
+# Dataset intermediate files
+Dataset/intermediate/
+Dataset/raw/
+
+# Docker volumes
+docker-compose.override.yml
