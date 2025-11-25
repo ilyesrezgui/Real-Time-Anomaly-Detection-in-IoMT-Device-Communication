@@ -101,6 +101,9 @@ for msg in consumer:
         point = Point("iomt_stream") \
             .field("mae", float(mae)) \
             .field("anomaly", is_anomaly)
+
+
+
         write_api.write(bucket=bucket, record=point)
         print(f"MAE={mae:.6f} → anomaly={is_anomaly} → InfluxDB write OK")
     except Exception as e:
