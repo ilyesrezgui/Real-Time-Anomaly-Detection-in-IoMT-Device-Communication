@@ -1,0 +1,265 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "graphTooltip": 1,
+  "schemaVersion": 36,
+  "title": "IoMT Real-Time Anomaly Detection – Professional Dashboard",
+  "version": 1,
+  "panels": [
+    {
+      "type": "stat",
+      "title": "System Health (Last 2 Minutes)",
+      "id": 10,
+      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 0 },
+      "datasource": { "type": "influxdb", "uid": "influxdb" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket:\"iomt_data\")\n  |> range(start:-2m)\n  |> filter(fn:(r) => r._measurement == \"iomt_stream\")\n  |> filter(fn:(r) => r._field == \"anomaly\")\n  |> last()"
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "horizontal",
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": { "text": "Healthy", "color": "green" }
+              }
+            },
+            {
+              "type": "value",
+              "options": {
+                "1": { "text": "Anomaly Detected", "color": "red" }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": 0, "color": "green" },
+              { "value": 1, "color": "red" }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+
+    {
+      "type": "timeseries",
+      "title": "MAE (Anomaly Score) Trend",
+      "id": 1,
+      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 0 },
+      "datasource": { "type": "influxdb", "uid": "influxdb" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"iomt_data\")\n  |> range(start: -1h)\n  |> filter(fn:(r)=>r._measurement==\"iomt_stream\")\n  |> filter(fn:(r)=>r._field==\"mae\")"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 0.2, "color": "red" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": true },
+        "tooltip": { "mode": "single" },
+        "drawStyle": "line",
+        "fillOpacity": 10
+      }
+    },
+
+    {
+      "type": "timeseries",
+      "title": "Anomaly Timeline (0 = normal, 1 = anomaly)",
+      "id": 2,
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 4 },
+      "datasource": { "type": "influxdb", "uid": "influxdb" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"iomt_data\")\n  |> range(start: -1h)\n  |> filter(fn:(r)=>r._measurement==\"iomt_stream\")\n  |> filter(fn:(r)=>r._field==\"anomaly\")\n  |> aggregateWindow(every: 1s, fn: last)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": 0, "color": "green" },
+              { "value": 1, "color": "red" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": false },
+        "tooltip": { "mode": "single" },
+        "drawStyle": "stairs",
+        "fillOpacity": 80
+      }
+    },
+
+    {
+      "type": "timeseries",
+      "title": "Anomaly Rate (% of flows flagged as anomaly)",
+      "id": 11,
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 10 },
+      "datasource": { "type": "influxdb", "uid": "influxdb" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket:\"iomt_data\")\n  |> range(start:-6h)\n  |> filter(fn:(r)=>r._measurement==\"iomt_stream\")\n  |> filter(fn:(r)=>r._field==\"anomaly\")\n  |> aggregateWindow(every: 1m, fn: mean)\n  |> map(fn: (r) => ({ r with _value: r._value * 100.0 }))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "color": { "mode": "palette-classic" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": 0, "color": "green" },
+              { "value": 50, "color": "yellow" },
+              { "value": 80, "color": "red" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": true },
+        "tooltip": { "mode": "single" },
+        "drawStyle": "line"
+      }
+    },
+
+    {
+      "type": "timeseries",
+      "title": "Traffic Volume (Flow Count per 10s)",
+      "id": 4,
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 10 },
+      "datasource": { "type": "influxdb", "uid": "influxdb" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket:\"iomt_data\")\n  |> range(start:-6h)\n  |> filter(fn:(r)=>r._measurement==\"iomt_stream\")\n  |> filter(fn:(r)=>r._field==\"mae\")\n  |> aggregateWindow(every:10s, fn: count)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": true },
+        "tooltip": { "mode": "single" },
+        "drawStyle": "bars",
+        "fillOpacity": 50
+      }
+    },
+
+    {
+      "type": "histogram",
+      "title": "MAE Distribution (How common each error level is)",
+      "id": 12,
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "datasource": { "type": "influxdb", "uid": "influxdb" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket:\"iomt_data\")\n  |> range(start:-1h)\n  |> filter(fn:(r)=>r._measurement==\"iomt_stream\")\n  |> filter(fn:(r)=>r._field==\"mae\")"
+        }
+      ],
+      "options": {
+        "legend": { "showLegend": false },
+        "tooltip": { "mode": "single" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      }
+    },
+
+    {
+      "type": "table",
+      "title": "Recent Anomalies (Last 50 events)",
+      "id": 13,
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "datasource": { "type": "influxdb", "uid": "influxdb" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket:\"iomt_data\")\n  |> range(start:-6h)\n  |> filter(fn:(r)=>r._measurement==\"iomt_stream\")\n  |> filter(fn:(r)=>r._field==\"anomaly\")\n  |> filter(fn:(r)=>r._value==1)\n  |> sort(columns:[\"_time\"], desc:true)\n  |> limit(n:50)"
+        }
+      ],
+      "options": {
+        "showHeader": true
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
+    },
+
+    {
+      "type": "heatmap",
+      "title": "Attack Heatmap (Anomaly Frequency Over Time)",
+      "id": 3,
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 24 },
+      "datasource": { "type": "influxdb", "uid": "influxdb" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"iomt_data\")\n  |> range(start: -24h)\n  |> filter(fn:(r)=>r._measurement==\"iomt_stream\")\n  |> filter(fn:(r)=>r._field==\"anomaly\")\n  |> filter(fn:(r)=>r._value==1)\n  |> aggregateWindow(every: 5m, fn: count)"
+        }
+      ],
+      "options": {
+        "legend": { "showLegend": true },
+        "tooltip": { "mode": "single" }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      }
+    }
+  ]
+}
