@@ -35,8 +35,8 @@ try:
     if "_time" in df.columns:
         df = df.rename(columns={"_time": "timestamp"})
 
-    # Save to CSV
-    filename = "ciciot2023_training_data.csv"
+    # Save to CSVdata
+    filename = "ciciot2023_training_.csv"
     df.to_csv(filename, index=False)
     print(f"✅ Success! Exported {len(df)} rows to '{filename}'")
 

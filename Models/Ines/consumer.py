@@ -28,10 +28,11 @@ with open(r"C:\Users\MSI\Videos\Downloads\Real-Time-Anomaly-Detection-in-IoMT-De
     numeric_features = json.load(f)
 
 with open(r"C:\Users\MSI\Videos\Downloads\Real-Time-Anomaly-Detection-in-IoMT-Device-Communication-1\Models\threshold.json", "r") as f:
-    threshold = json.load(f)["threshold"]
+    threshold = float(json.load(f)["threshold"])
 
 timesteps = len(numeric_features)
 n_features = 1
+
 # -------------------------
 # Kafka Consumer
 # -------------------------
@@ -44,7 +45,7 @@ consumer = KafkaConsumer(
 print("Kafka Consumer connected. Waiting for messages...")
 
 # -------------------------
-# InfluxDB Client (FIXED TOKEN)
+# InfluxDB Client
 # -------------------------
 influx_client = InfluxDBClient(
     url="http://localhost:8086",
@@ -56,59 +57,58 @@ write_api = influx_client.write_api(write_options=SYNCHRONOUS)
 bucket = "iomt_data"
 
 # -------------------------
-# Helper function: preprocess message
+# Feature list
+# -------------------------
+features = [
+    "Header_Length", "Protocol Type", "Time_To_Live", "Rate",
+    "fin_flag_number", "syn_flag_number", "psh_flag_number", "ack_flag_number",
+    "ece_flag_number", "cwr_flag_number",
+    "HTTP", "HTTPS", "DNS", "Telnet", "SMTP", "SSH", "IRC",
+    "TCP", "UDP", "DHCP", "ARP", "ICMP", "IGMP",
+    "Tot sum", "Min", "Max", "AVG", "Std", "IAT", "Number", "Variance"
+]
+
+# -------------------------
+# Preprocess function
 # -------------------------
 def preprocess_message(data):
-    # Extract numeric features only (missing ones default to 0)
     row = [data.get(f, 0) for f in numeric_features]
     arr = np.array(row, dtype=np.float32).reshape(1, -1)
-    
-    # Replace inf/-inf with 0
     arr = np.where(np.isfinite(arr), arr, 0)
-    
-    # Optional: clip extreme values to avoid scaling issues
     arr = np.clip(arr, -1e10, 1e10)
-    
-    # Scale
     arr_scaled = scaler.transform(arr)
-    
-    # Reshape for LSTM
     arr_scaled = arr_scaled.reshape(1, timesteps, n_features)
     return arr_scaled
 
-
 # -------------------------
-# Main loop
+# Main Loop
 # -------------------------
 for msg in consumer:
-    
-    data = msg.value  
 
-# JSON from Kafka
+    data = msg.value
+
     try:
         X = preprocess_message(data)
     except Exception as e:
         print("Skipping message due to error:", e, "Data:", data)
         continue
 
-    # Model prediction
     reconstruction = model.predict(X, verbose=0)
     mae = np.mean(np.abs(reconstruction - X))
     is_anomaly = int(mae > threshold)
 
-    # Write to InfluxDB
     try:
         point = Point("iomt_stream") \
             .field("mae", float(mae)) \
             .field("anomaly", is_anomaly)
 
-
+        for f in features:
+            if f in data:
+                point = point.field(f.replace(" ", "_"), float(data[f]))
 
         write_api.write(bucket=bucket, record=point)
-        print(f"MAE={mae:.6f} → anomaly={is_anomaly} → InfluxDB write OK")
+        print(f"MAE={mae:.6f} | threshold={threshold:.6f} | anomaly={is_anomaly}")
+
+
     except Exception as e:
-        print(f"InfluxDB write error: {e}")
-
-
-
-
+        print("InfluxDB write error:", e)

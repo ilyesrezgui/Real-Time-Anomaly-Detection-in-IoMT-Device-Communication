@@ -33,7 +33,7 @@ python3 -m venv venv
 
 # Activate virtual environment
 source venv/bin/activate
-
+or venv/bin/activate.bat
 # Install all required packages
 pip install -r requirements.txt
 ```
