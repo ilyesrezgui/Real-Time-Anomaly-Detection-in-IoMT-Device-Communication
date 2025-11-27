@@ -25,10 +25,10 @@ RUN pip install --no-cache-dir -r requirements-spark.txt
 COPY Spark/consumer.py /app/consumer.py
 
 # Copy model files for anomaly detection
-COPY Models/scaler.pkl /app/scaler.pkl
-COPY Models/numeric_features.json /app/selected_features.json
+COPY Models/Chaima/scaler.pkl /app/scaler.pkl
+COPY Models/Chaima/numeric_features.json /app/selected_features.json
 COPY Models/Chaima/lstm_autoencoder.h5 /app/lstm_autoencoder.h5
-COPY Models/threshold.json /app/threshold.json
+COPY Models/Chaima/threshold.json /app/threshold.json
 
 # Set JAVA_HOME for Java 11
 ENV JAVA_HOME=/usr/lib/jvm/temurin-11-jre-amd64
