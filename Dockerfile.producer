@@ -1,0 +1,15 @@
+# Use Python 3.11 slim base image
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install Python dependencies (only what's needed for producer)
+RUN pip install --no-cache-dir kafka-python==2.0.2 pandas==2.1.4
+
+# Copy producer code and data
+COPY Kafka/producer_docker.py /app/producer.py
+COPY data.csv /app/data.csv
+
+# Run the producer
+CMD ["python", "producer.py"]

@@ -13,21 +13,35 @@ warnings.filterwarnings("ignore", category=UserWarning)
 print("RUNNING FROM:", os.getcwd())
 
 # -------------------------
-# Load LSTM model, scaler, threshold
+# Load configuration from environment variables
+# -------------------------
+MODEL_PATH = os.getenv("MODEL_PATH", "/app/Models/Ines/lstm_autoencoder.h5")
+SCALER_PATH = os.getenv("SCALER_PATH", "/app/Models/Ines/scaler.pkl")
+NUMERIC_FEATURES_PATH = os.getenv("NUMERIC_FEATURES_PATH", "/app/Models/Ines/numeric_features.json")
+THRESHOLD_PATH = os.getenv("THRESHOLD_PATH", "/app/Models/Ines/threshold.json")
+
+KAFKA_BROKER = os.getenv("KAFKA_BROKER", "localhost:9092")
+KAFKA_TOPIC = os.getenv("KAFKA_TOPIC", "iomt_traffic_stream")
+
+INFLUXDB_URL = os.getenv("INFLUXDB_URL", "http://localhost:8086")
+INFLUXDB_TOKEN = os.getenv("INFLUXDB_TOKEN")
+INFLUXDB_ORG = os.getenv("INFLUXDB_ORG", "OST")
+INFLUXDB_BUCKET = os.getenv("INFLUXDB_BUCKET", "iomt_data")
+
+# -------------------------
+# Load Model + Files
 # -------------------------
 model = tf.keras.models.load_model(
-    r"C:\Users\MSI\Videos\Downloads\Real-Time-Anomaly-Detection-in-IoMT-Device-Communication-1\Models\lstm_autoencoder.h5",
+    MODEL_PATH,
     custom_objects={"mse": tf.keras.losses.MeanSquaredError()}
 )
 
-scaler = joblib.load(
-    r"C:\Users\MSI\Videos\Downloads\Real-Time-Anomaly-Detection-in-IoMT-Device-Communication-1\Models\scaler.pkl"
-)
+scaler = joblib.load(SCALER_PATH)
 
-with open(r"C:\Users\MSI\Videos\Downloads\Real-Time-Anomaly-Detection-in-IoMT-Device-Communication-1\Models\numeric_features.json", "r") as f:
+with open(NUMERIC_FEATURES_PATH, "r") as f:
     numeric_features = json.load(f)
 
-with open(r"C:\Users\MSI\Videos\Downloads\Real-Time-Anomaly-Detection-in-IoMT-Device-Communication-1\Models\threshold.json", "r") as f:
+with open(THRESHOLD_PATH, "r") as f:
     threshold = float(json.load(f)["threshold"])
 
 timesteps = len(numeric_features)
@@ -37,45 +51,30 @@ n_features = 1
 # Kafka Consumer
 # -------------------------
 consumer = KafkaConsumer(
-    'iomt_traffic_stream',
-    bootstrap_servers='localhost:9092',
+    KAFKA_TOPIC,
+    bootstrap_servers=KAFKA_BROKER,
     value_deserializer=lambda v: json.loads(v.decode('utf-8')),
     auto_offset_reset='earliest'
 )
-print("Kafka Consumer connected. Waiting for messages...")
+print(f"Kafka Consumer connected → {KAFKA_BROKER} | topic={KAFKA_TOPIC}")
 
 # -------------------------
 # InfluxDB Client
 # -------------------------
 influx_client = InfluxDBClient(
-    url="http://localhost:8086",
-    token="Wq6IQNlfN2D14Akf2Xo0dzHM8hLkVCg1Lxr4rBb0o7e3xE6PlRuJYdAw1ZQtpnhaygu0aVsW8Y9REw2q9KCuow==",
-    org="OST"
+    url=INFLUXDB_URL,
+    token=INFLUXDB_TOKEN,
+    org=INFLUXDB_ORG
 )
-
 write_api = influx_client.write_api(write_options=SYNCHRONOUS)
-bucket = "iomt_data"
 
 # -------------------------
-# Feature list
-# -------------------------
-features = [
-    "Header_Length", "Protocol Type", "Time_To_Live", "Rate",
-    "fin_flag_number", "syn_flag_number", "psh_flag_number", "ack_flag_number",
-    "ece_flag_number", "cwr_flag_number",
-    "HTTP", "HTTPS", "DNS", "Telnet", "SMTP", "SSH", "IRC",
-    "TCP", "UDP", "DHCP", "ARP", "ICMP", "IGMP",
-    "Tot sum", "Min", "Max", "AVG", "Std", "IAT", "Number", "Variance"
-]
-
-# -------------------------
-# Preprocess function
+# Preprocess
 # -------------------------
 def preprocess_message(data):
     row = [data.get(f, 0) for f in numeric_features]
     arr = np.array(row, dtype=np.float32).reshape(1, -1)
     arr = np.where(np.isfinite(arr), arr, 0)
-    arr = np.clip(arr, -1e10, 1e10)
     arr_scaled = scaler.transform(arr)
     arr_scaled = arr_scaled.reshape(1, timesteps, n_features)
     return arr_scaled
@@ -90,7 +89,7 @@ for msg in consumer:
     try:
         X = preprocess_message(data)
     except Exception as e:
-        print("Skipping message due to error:", e, "Data:", data)
+        print("Preprocessing error, skipping:", e)
         continue
 
     reconstruction = model.predict(X, verbose=0)
@@ -102,13 +101,13 @@ for msg in consumer:
             .field("mae", float(mae)) \
             .field("anomaly", is_anomaly)
 
-        for f in features:
-            if f in data:
-                point = point.field(f.replace(" ", "_"), float(data[f]))
+        for k, v in data.items():
+            if isinstance(v, (int, float)):
+                point = point.field(k.replace(" ", "_"), float(v))
 
-        write_api.write(bucket=bucket, record=point)
-        print(f"MAE={mae:.6f} | threshold={threshold:.6f} | anomaly={is_anomaly}")
+        write_api.write(bucket=INFLUXDB_BUCKET, record=point)
 
+        print(f"MAE={mae:.6f} | TH={threshold:.6f} | anomaly={is_anomaly}")
 
     except Exception as e:
-        print("InfluxDB write error:", e)
+        print("InfluxDB error:", e)

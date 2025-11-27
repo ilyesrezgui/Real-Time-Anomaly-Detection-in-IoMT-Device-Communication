@@ -1,6 +1,7 @@
 version: '3.7'
 
 services:
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.0
     container_name: zookeeper
@@ -26,6 +27,7 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
   influxdb:
     image: influxdb:2.7
     container_name: influxdb
@@ -37,6 +39,7 @@ services:
       DOCKER_INFLUXDB_INIT_PASSWORD: 12345678
       DOCKER_INFLUXDB_INIT_ORG: OST
       DOCKER_INFLUXDB_INIT_BUCKET: iomt_data
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: my-super-secret-admin-token
     volumes:
       - influxdb-data:/var/lib/influxdb2
 
@@ -53,6 +56,18 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
 
+  kafka-producer:
+    build:
+      context: .
+      dockerfile: Dockerfile.producer
+    container_name: kafka-producer
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BROKER: kafka:29092
+      KAFKA_TOPIC: iomt_traffic_stream
+    restart: unless-stopped
+
   spark-consumer:
     build:
       context: .
@@ -61,16 +76,35 @@ services:
     depends_on:
       - kafka
       - influxdb
+      - kafka-producer
     environment:
       KAFKA_BROKER: kafka:29092
       KAFKA_TOPIC: iomt_traffic_stream
       INFLUXDB_URL: http://influxdb:8086
-      INFLUXDB_TOKEN: bLu6eS4fYfeFdnQv6ZZ4lyWObXncoDjN0bW8rxaVm_EVbe0_bzcRkFVlTP_ZEAgDZT26HBLNF9BVBA9aV36aFw==
+      INFLUXDB_TOKEN: my-super-secret-admin-token
       INFLUXDB_ORG: OST
       INFLUXDB_BUCKET: iomt_data
     restart: unless-stopped
 
+  anomaly-consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile.anomaly
+    container_name: anomaly-consumer
+    depends_on:
+      - kafka
+      - influxdb
+    environment:
+      KAFKA_BROKER: kafka:29092
+      KAFKA_TOPIC: iomt_traffic_stream
+      INFLUXDB_URL: http://influxdb:8086
+      INFLUXDB_TOKEN: my-super-secret-admin-token
+      INFLUXDB_ORG: OST
+      INFLUXDB_BUCKET: iomt_data
+    restart: unless-stopped
+
+
+
 volumes:
   influxdb-data:
   grafana-data:
-
