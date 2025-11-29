@@ -11,6 +11,7 @@ venv/
 env/
 ENV/
 .python-version
+venv-pyspark/
 
 # Python cache
 **/__pycache__/
