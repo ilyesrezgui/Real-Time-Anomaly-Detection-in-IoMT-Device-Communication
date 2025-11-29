@@ -70,3 +70,25 @@ The consumer:
 
 
 
+---
+
+# 📊 Grafana Dashboard
+
+The file:
+
+➡ **`grafana_dashboard.json`**
+
+This dashboard includes:
+
+- System Health (Normal/Anomaly)
+- MAE Trend (Anomaly Score)
+- Anomaly Timeline
+- Anomaly Rate %
+- Traffic Volume
+- Histogram of MAE
+- Attack Heatmap
+- Recent Anomalies Table
+
+### How to import
+
+
