@@ -23,3 +23,23 @@ The system components:
 
 
 
+
+---
+
+# 🧠 Model (Training Script)
+
+The model is trained using the script:
+
+➡ `retrain_lstm_autoencoder.py`
+
+### ✔ Training Steps
+
+1. Load dataset  
+2. Select numeric features  
+3. Drop highly correlated features  
+4. Split data (train, validation, test)  
+5. Scale data with MinMaxScaler  
+6. Train LSTM Autoencoder  
+7. Compute threshold (99th percentile MAE)  
+8. Save output files:
+
