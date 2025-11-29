@@ -30,7 +30,7 @@ The system components:
 
 The model is trained using the script:
 
-➡ `retrain_lstm_autoencoder.py`
+➡ `model.ipynb`
 
 ### ✔ Training Steps
 
