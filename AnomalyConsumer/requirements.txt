@@ -3,3 +3,4 @@ tensorflow
 numpy
 joblib
 influxdb-client
+scikit-learn
