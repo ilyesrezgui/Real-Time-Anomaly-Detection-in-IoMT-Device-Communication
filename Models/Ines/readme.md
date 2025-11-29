@@ -58,7 +58,11 @@ File: **`consumer.py`**
 
 The consumer:
 
-- Loads the trained model + scaler + numeric features
+- Loads :
+  - `lstm_autoencoder.h5`  
+  - `scaler.pkl`  
+  - `numeric_features.json`  
+  - `threshold.json`
 - Connects to Kafka topic: `iomt_traffic_stream`
 - Preprocesses each incoming message
 - Computes MAE reconstruction error
@@ -68,15 +72,13 @@ The consumer:
 
 
 
-
-
 ---
 
 # 📊 Grafana Dashboard
 
 The file:
 
-➡ **`grafana_dashboard.json`**
+➡ **`Grafana.json`**
 
 This dashboard includes:
 
@@ -90,5 +92,34 @@ This dashboard includes:
 - Recent Anomalies Table
 
 ### How to import
+1. Open Grafana  
+2. Navigate to: **Dashboards → Import**  
+3. Upload `grafana.json`
 
+
+---
+
+# Docker Deployment
+
+
+## Dockerfile.anomaly 
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY AnomalyConsumer/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY Models/Ines /app/Models/Ines
+
+# Set default environment variables for paths
+ENV MODEL_PATH="/app/Models/Ines/lstm_autoencoder.h5"
+ENV SCALER_PATH="/app/Models/Ines/scaler.pkl"
+ENV NUMERIC_FEATURES_PATH="/app/Models/Ines/numeric_features.json"
+ENV THRESHOLD_PATH="/app/Models/Ines/threshold.json"
+
+# Run your consumer
+CMD ["python", "/app/Models/Ines/consumer.py"]
 
