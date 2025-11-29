@@ -99,27 +99,35 @@ This dashboard includes:
 
 ---
 
-# Docker Deployment
+## Docker Deployment
+
+The project uses Docker to run the real-time anomaly detection consumer along with Kafka and InfluxDB.  
+To make the setup simple, all necessary Docker configuration is grouped into one section.
+
+### What This Section Contains
+
+1. **Docker Compose Service (`anomaly-consumer`)**  
+   This service builds and runs the Kafka anomaly detection consumer.  
+   It:
+   - Uses `Dockerfile.anomaly`
+   - Waits for Kafka and InfluxDB to start
+   - Loads model paths via environment variables
+   - Restarts automatically if it crashes
+
+2. **requirements.txt (Inside YAML)**  
+   For clarity, all Python dependencies used inside the container are listed here:
+   - Kafka client  
+   - TensorFlow  
+   - NumPy  
+   - Joblib  
+   - InfluxDB client  
+   - scikit-learn  
+
+   These are installed inside the container using `requirements.txt`.
+
+3. **Docker Command**  
+   - docker-compose up --build
+   This is the command used to build and run the anomaly-consumer, Kafka, InfluxDB,spark-consumer ,grafana, zookeeper  so all other services defined in the  full `docker-compose.yml` file.
 
 
-## Dockerfile.anomaly 
-
-```dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-
-COPY AnomalyConsumer/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY Models/Ines /app/Models/Ines
-
-# Set default environment variables for paths
-ENV MODEL_PATH="/app/Models/Ines/lstm_autoencoder.h5"
-ENV SCALER_PATH="/app/Models/Ines/scaler.pkl"
-ENV NUMERIC_FEATURES_PATH="/app/Models/Ines/numeric_features.json"
-ENV THRESHOLD_PATH="/app/Models/Ines/threshold.json"
-
-# Run your consumer
-CMD ["python", "/app/Models/Ines/consumer.py"]
 
