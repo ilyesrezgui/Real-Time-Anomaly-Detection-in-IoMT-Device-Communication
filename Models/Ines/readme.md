@@ -62,6 +62,11 @@ The consumer:
 - Connects to Kafka topic: `iomt_traffic_stream`
 - Preprocesses each incoming message
 - Computes MAE reconstruction error
-- Flags anomaly if:
+- Flags anomaly if: MAE > threshold
+
+- Stores results in InfluxDB (measurement: `iomt_stream`)
+
+
+
 
 
