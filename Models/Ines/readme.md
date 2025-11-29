@@ -42,7 +42,26 @@ The model is trained using the script:
 6. Train LSTM Autoencoder  
 7. Compute threshold (99th percentile MAE)  
 8. Save output files:
-lstm_autoencoder.h5
-scaler.pkl
-numeric_features.json
+lstm_autoencoder.h5,
+scaler.pkl,
+numeric_features.json,
 threshold.json
+
+
+This model is used by the Kafka consumer for real-time anomaly detection.
+
+---
+
+# 🔍 Kafka Anomaly Consumer
+
+File: **`consumer.py`**
+
+The consumer:
+
+- Loads the trained model + scaler + numeric features
+- Connects to Kafka topic: `iomt_traffic_stream`
+- Preprocesses each incoming message
+- Computes MAE reconstruction error
+- Flags anomaly if:
+
+
