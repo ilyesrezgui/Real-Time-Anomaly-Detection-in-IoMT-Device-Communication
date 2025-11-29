@@ -42,4 +42,7 @@ The model is trained using the script:
 6. Train LSTM Autoencoder  
 7. Compute threshold (99th percentile MAE)  
 8. Save output files:
-
+lstm_autoencoder.h5
+scaler.pkl
+numeric_features.json
+threshold.json
