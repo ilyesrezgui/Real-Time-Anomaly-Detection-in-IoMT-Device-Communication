@@ -4,13 +4,17 @@ from pyvis.network import Network
 import streamlit.components.v1 as components
 from streamlit_option_menu import option_menu 
 from IPython.core.display import display, HTML
+import math
+from collections import deque
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
+from collections import Counter
 import base64
 from sklearn.model_selection import train_test_split
 from os import getenv
+import random
 import os
 import datetime
 from kafka import KafkaConsumer
@@ -99,6 +103,66 @@ for message in consumer:
     except Exception as e:
         continue
 st.markdown(f'<div class="line" style=" display: inline-block;border-top: 1px solid black;width:  100%;margin-top: 0px; margin-bottom: 20px"></div>', unsafe_allow_html=True)
+def ams_f2(df, column, k=20, seed=42):
+    random.seed(seed)
+    estimates = []
+
+    for _ in range(k):
+        h = {}
+
+        def sign(x):
+            if x not in h:
+                h[x] = random.choice([-1, 1])
+            return h[x]
+
+        Z = 0
+        for x in df[column]:
+            Z += sign(x)
+
+        estimates.append(Z * Z)
+
+    return np.mean(estimates)
+class ADWIN:
+    def __init__(self, delta=0.002):
+        self.delta = delta
+        self.window = deque()
+        self.width = 0
+        self.total = 0.0
+
+    def _epsilon(self, n0, n1):
+        n = n0 + n1
+        return math.sqrt(
+            (1 / (2 * n0)) * math.log(4 * n / self.delta)
+        ) + math.sqrt(
+            (1 / (2 * n1)) * math.log(4 * n / self.delta)
+        )
+
+    def update(self, value):
+        self.window.append(value)
+        self.width += 1
+        self.total += value
+
+        drift_detected = False
+
+        for i in range(1, self.width):
+            w0 = list(self.window)[:i]
+            w1 = list(self.window)[i:]
+
+            n0, n1 = len(w0), len(w1)
+            if n0 == 0 or n1 == 0:
+                continue
+
+            mean0 = sum(w0) / n0
+            mean1 = sum(w1) / n1
+
+            if abs(mean0 - mean1) > self._epsilon(n0, n1):
+                self.window = deque(w1)
+                self.width = n1
+                self.total = sum(w1)
+                drift_detected = True
+                break
+
+        return drift_detected
 selected = option_menu(
     menu_title=None,
     options=["data analysis", "isolation forest model implementation"],
@@ -142,6 +206,19 @@ def page1():
     sns.heatmap(df.corr(numeric_only=True), cmap="YlGnBu", annot=False)
     st.header("🔍 Correlation Heatmap")
     st.pyplot(fig)
+    df["header protocole"] = list(zip(df["Header_Length"], df["Protocol Type"]))
+
+    ams_header_page = ams_f2(df, column="header protocole")
+    freq_page = Counter(df["page"])
+    exact_f2_page = sum(v * v for v in freq_page.values())
+
+    # Exact F2 for (user, page)
+    freq_page = Counter(df["header protocole"])
+    exact_f2 = sum(v * v for v in freq_page.values())
+    st.subheader("Exact F₂ Values")
+
+    st.write("Exact F₂ (page):", exact_f2_page)
+    st.write("Exact F₂ (user, page):", exact_f2)
 def page2():
     df=pd.read_csv('data.csv')
     df['Label_Type'] = df['Label'].apply(lambda x: 'normal' if x == 'BENIGN' else 'anomaly')
@@ -224,8 +301,17 @@ def page2():
     plt.title('Confusion Matrix')
 
     st.pyplot(fig)
+    adwin = ADWIN(delta=0.01)
 
+    drift_points = []
 
+    for i, x in enumerate(df["value"]):
+        if adwin.update(x):
+            drift_points.append(i)
+
+    st.subheader("ADWIN Drift Detection")
+
+    st.write("Drift detected at indices:", drift_points)
 
 if selected == "data analysis":
   page1()
